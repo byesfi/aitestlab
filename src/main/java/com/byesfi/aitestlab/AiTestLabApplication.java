@@ -14,7 +14,6 @@ import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -108,14 +107,18 @@ public class AiTestLabApplication {
 		public String chat(String message){
 
 			var listOfSimilarDocuments = this.vectorStoreRetriever.retrieve(message);
+			//Sets of documents that are related to words similar to the query that the user has made to me.
 			var documents = listOfSimilarDocuments
 					.stream()
 					.map(Document::getContent)
 					.collect(Collectors.joining(System.lineSeparator()));
+
 			var systemMessage = new SystemPromptTemplate(this.template)
 					.createMessage(Map.of("documents", documents));
+
 			var userMessage = new UserMessage(message);
 			var prompt = new Prompt(List.of(systemMessage, userMessage));
+
 			var aiResponse = chatClient.generate(prompt);
 			return aiResponse.getGeneration().getContent();
 		}
